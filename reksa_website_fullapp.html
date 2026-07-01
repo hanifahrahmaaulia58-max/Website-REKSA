@@ -1,0 +1,1233 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;overflow-x:hidden}
+:root{
+  --green:#22c55e;--green-dark:#16a34a;--green-bg:#052e16;--green-dim:#14532d;
+  --yellow:#eab308;--yellow-dark:#a16207;--yellow-bg:#1c1400;--yellow-dim:#713f12;
+  --red:#ef4444;--red-dark:#b91c1c;--red-bg:#1c0a0a;--red-dim:#7f1d1d;
+  --blue:#3b82f6;--blue-bg:#0d1f40;
+  --card:#1a1d27;--card2:#212435;--border:#2a2d3e;
+  --text:#e8eaf0;--text2:#9ca3af;--text3:#6b7280;
+  --accent:#22c55e;
+}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#13151f;border-right:1px solid var(--border);z-index:100;display:flex;flex-direction:column;overflow-y:auto}
+.logo-wrap{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.logo-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.logo-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:6px}
+.nav-section{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:16px 16px 6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;border-left:2px solid transparent;white-space:nowrap}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.04);border-left-color:var(--border)}
+.nav-item.active{color:#fff;background:rgba(34,197,94,.08);border-left-color:var(--green);font-weight:500}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:8px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green)}
+.user-name{font-size:12px;font-weight:500;color:#fff}
+.user-role{font-size:10px;color:var(--text3)}
+
+/* MAIN */
+.main{margin-left:220px;min-height:100vh;padding:24px}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:#fff}
+.page-sub{font-size:13px;color:var(--text2);margin-top:4px}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.topbar-left h1{font-size:20px;font-weight:700;color:#fff}
+.topbar-left p{font-size:12px;color:var(--text2);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:none}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--text2);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-danger{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red)}
+
+/* ALERT BANNER */
+.alert-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;margin-bottom:20px;font-size:13px}
+.alert-siaga{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert-waspada{background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.3);color:#fde047}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-red{background:var(--red);animation:pulse-red 1.5s infinite}
+.dot-yellow{background:var(--yellow);animation:pulse-yellow 1.5s infinite}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+@keyframes pulse-yellow{0%,100%{box-shadow:0 0 0 0 rgba(234,179,8,.6)}50%{box-shadow:0 0 0 6px rgba(234,179,8,0)}}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0}
+.stat-card.green::before{background:var(--green)}
+.stat-card.yellow::before{background:var(--yellow)}
+.stat-card.red::before{background:var(--red)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-label{font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:28px;font-weight:700;color:#fff;margin:8px 0 4px;line-height:1}
+.stat-sub{font-size:11px;color:var(--text2)}
+.stat-icon{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.green{background:rgba(34,197,94,.12)}
+.stat-icon.yellow{background:rgba(234,179,8,.12)}
+.stat-icon.red{background:rgba(239,68,68,.12)}
+.stat-icon.blue{background:rgba(59,130,246,.12)}
+
+/* IKD CARD */
+.ikd-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px}
+.ikd-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.ikd-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px}
+.ikd-value{font-size:48px;font-weight:800;line-height:1;color:#fff;margin:6px 0 4px}
+.ikd-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+.ikd-meter{position:relative;margin:16px 0 12px}
+.ikd-track{height:10px;background:var(--card2);border-radius:5px;overflow:hidden}
+.ikd-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--red) 20%,var(--yellow) 50%,var(--green) 80%);transition:width 1s ease}
+.ikd-needle{position:absolute;top:-3px;width:16px;height:16px;background:#fff;border:2px solid #0f1117;border-radius:50%;transform:translateX(-50%);transition:left 1s ease;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.ikd-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px}
+.ikd-content{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ikd-chart-wrap{height:120px;position:relative}
+.ikd-ranks{display:flex;flex-direction:column;gap:6px}
+.rank-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.rank-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.rank-num.gold{background:rgba(234,179,8,.2);color:var(--yellow)}
+.rank-num.silver{background:rgba(156,163,175,.15);color:#9ca3af}
+.rank-num.bronze{background:rgba(217,119,6,.15);color:#d97706}
+.rank-up{color:var(--green);font-size:10px;font-weight:600}
+.rank-down{color:var(--red);font-size:10px;font-weight:600}
+
+/* TWO-COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.card-title-text{display:flex;align-items:center;gap:7px}
+.chart-wrap{height:160px;position:relative}
+.chart-wrap.tall{height:200px}
+
+/* RT TABLE */
+.rt-table{width:100%;border-collapse:collapse;font-size:12px}
+.rt-table th{text-align:left;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.rt-table td{padding:9px 10px;border-bottom:1px solid rgba(42,45,62,.5);color:var(--text2);vertical-align:middle}
+.rt-table tr:last-child td{border-bottom:none}
+.rt-table tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.badge.rendah{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.badge.sedang{background:rgba(234,179,8,.12);color:var(--yellow);border:1px solid rgba(234,179,8,.2)}
+.badge.tinggi{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.badge.aman{background:rgba(34,197,94,.1);color:var(--green)}
+.badge.waspada{background:rgba(234,179,8,.1);color:var(--yellow)}
+.badge.siaga{background:rgba(239,68,68,.1);color:var(--red)}
+.progress-bar{height:5px;background:var(--card2);border-radius:3px;overflow:hidden;min-width:60px}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s}
+.fill-green{background:var(--green)}
+.fill-yellow{background:var(--yellow)}
+.fill-red{background:var(--red)}
+
+/* MAP */
+.map-container{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.map-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.map-body{display:grid;grid-template-columns:1fr 300px;min-height:360px}
+.map-canvas{background:#0f1723;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.map-svg{width:100%;max-height:340px}
+.map-legend{padding:16px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
+.legend-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.rt-detail{background:var(--card2);border-radius:10px;padding:12px;margin-top:8px;display:none}
+.rt-detail.visible{display:block}
+.rt-detail h4{font-size:13px;font-weight:600;color:#fff;margin-bottom:8px}
+.rt-detail-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:var(--text2)}
+.rt-detail-row span:last-child{color:#fff;font-weight:500}
+
+/* FORM */
+.form-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.form-section-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;font-weight:500;color:var(--text2)}
+.form-input{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;outline:none;transition:border-color .15s;font-family:inherit}
+.form-input:focus{border-color:var(--green)}
+.form-select{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;outline:none;cursor:pointer;font-family:inherit;appearance:none}
+.form-select:focus{border-color:var(--green)}
+.indicator-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.indicator-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px}
+.ind-name{font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:500}
+.ind-slider{width:100%;-webkit-appearance:none;height:4px;background:var(--card);border-radius:2px;outline:none}
+.ind-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--green);cursor:pointer}
+.ind-value{font-size:18px;font-weight:700;color:#fff;margin:6px 0 2px}
+.ind-label{font-size:10px;color:var(--text3)}
+.score-preview{background:var(--card2);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border)}
+.score-num{font-size:40px;font-weight:800;color:#fff}
+.score-cat{font-size:13px;font-weight:600;margin-top:4px}
+
+/* NOTIF */
+.notif-list{display:flex;flex-direction:column;gap:8px}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:border-color .15s}
+.notif-item:hover{border-color:var(--text3)}
+.notif-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+.notif-icon.red{background:rgba(239,68,68,.12)}
+.notif-icon.yellow{background:rgba(234,179,8,.12)}
+.notif-icon.green{background:rgba(34,197,94,.12)}
+.notif-icon.blue{background:rgba(59,130,246,.12)}
+.notif-content{flex:1;min-width:0}
+.notif-title{font-weight:600;color:#fff;margin-bottom:2px}
+.notif-time{color:var(--text3);font-size:11px;margin-top:2px}
+.notif-unread{width:6px;height:6px;background:var(--red);border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* LAPORAN WARGA */
+.report-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.report-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.report-img{width:100%;height:100px;object-fit:cover;border-radius:7px;background:linear-gradient(135deg,#1a2540 0%,#0f1117 100%);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px}
+.report-meta{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* REKOMENDASI */
+.rekom-item{display:flex;gap:10px;padding:10px 12px;background:var(--card2);border-radius:8px;border-left:3px solid var(--yellow);margin-bottom:8px}
+.rekom-item.urgent{border-left-color:var(--red)}
+.rekom-item.ok{border-left-color:var(--green)}
+.rekom-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.rekom-text{font-size:12px;color:var(--text2)}
+.rekom-text strong{color:#fff;display:block;margin-bottom:2px;font-size:12px}
+
+/* STATUS DESA */
+.status-ring{display:flex;align-items:center;justify-content:center;margin:8px 0}
+.status-label{text-align:center;font-size:11px;color:var(--text3);margin-bottom:4px}
+.desa-status{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600}
+.status-aman{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.status-waspada{background:rgba(234,179,8,.12);color:var(--yellow);border:1px solid rgba(234,179,8,.25)}
+.status-siaga{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--card2);border-radius:9px;padding:3px;margin-bottom:18px;width:fit-content}
+.tab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s}
+.tab.active{background:var(--card);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+/* LANDING */
+.landing-hero{text-align:center;padding:60px 20px 40px;background:linear-gradient(180deg,rgba(34,197,94,.06) 0%,transparent 60%);border-radius:16px;margin-bottom:24px;border:1px solid rgba(34,197,94,.1)}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--green);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px}
+.hero-title{font-size:36px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:10px}
+.hero-title span{color:var(--green)}
+.hero-sub{font-size:14px;color:var(--text2);max-width:520px;margin:0 auto 24px;line-height:1.7}
+.hero-btns{display:flex;gap:10px;justify-content:center}
+.btn-lg{padding:11px 22px;font-size:14px;font-weight:600;border-radius:10px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.feature-icon{font-size:24px;margin-bottom:10px}
+.feature-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:5px}
+.feature-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.risk-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:8px;margin-bottom:6px}
+.risk-dot-lg{width:14px;height:14px;border-radius:50%}
+
+/* RESPONSIVE */
+@media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.map-body{grid-template-columns:1fr}.ikd-content{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.sidebar{width:54px}.sidebar .nav-item span,.sidebar .logo-title,.sidebar .logo-sub,.logo-badge,.nav-section,.user-name,.user-role{display:none}.main{margin-left:54px;padding:16px}.stats-grid{grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:1fr}.indicator-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo-wrap">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:32px;height:32px;background:var(--green-dim);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🛡️</div>
+      <div>
+        <div class="logo-title">REKSA</div>
+        <div class="logo-sub">Desa Windujaya</div>
+      </div>
+    </div>
+    <div class="logo-badge">● Sistem Aktif</div>
+  </div>
+
+  <div class="nav-section">Umum</div>
+  <div class="nav-item" onclick="showPage('landing')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    <span>Landing Page</span>
+  </div>
+  <div class="nav-item active" onclick="showPage('dashboard')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    <span>Dashboard</span>
+  </div>
+
+  <div class="nav-section">Monitoring</div>
+  <div class="nav-item" onclick="showPage('ikd')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <span>Indeks IKD</span>
+  </div>
+  <div class="nav-item" onclick="showPage('peta')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+    <span>Peta Risiko</span>
+  </div>
+  <div class="nav-item" onclick="showPage('ews')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+    <span>Early Warning</span>
+  </div>
+
+  <div class="nav-section">Input Data</div>
+  <div class="nav-item" onclick="showPage('penilaian')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    <span>Form Penilaian</span>
+  </div>
+  <div class="nav-item" onclick="showPage('laporan')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    <span>Laporan Warga</span>
+  </div>
+
+  <div class="nav-section">Manajemen</div>
+  <div class="nav-item" onclick="showPage('statistik')">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    <span>Statistik</span>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">SA</div>
+      <div>
+        <div class="user-name">Super Admin</div>
+        <div class="user-role">Desa Windujaya</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- =================== PAGES =================== -->
+<main class="main">
+
+<!-- LANDING PAGE -->
+<div id="page-landing" class="page">
+  <div class="landing-hero">
+    <div class="hero-eyebrow">🛡️ Sistem Informasi Kebencanaan Desa</div>
+    <h1 class="hero-title">REKSA — Rapor Penilaian<br><span>Ketangguhan Siaga Bencana</span></h1>
+    <p class="hero-sub">Sistem monitoring risiko longsor berbasis website untuk Desa Windujaya. Terintegrasi, real-time, dan berkelanjutan.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary btn-lg" onclick="showPage('dashboard')">Lihat Dashboard →</button>
+      <button class="btn btn-outline btn-lg" onclick="showPage('penilaian')">Mulai Penilaian</button>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:20px">
+    <div class="stat-card green"><div class="stat-icon green">🌿</div><div class="stat-label">RT Dipantau</div><div class="stat-value">15</div><div class="stat-sub">dari 18 RT total</div></div>
+    <div class="stat-card green"><div class="stat-icon green">✅</div><div class="stat-label">Risiko Rendah</div><div class="stat-value">6</div><div class="stat-sub">RT aman</div></div>
+    <div class="stat-card yellow"><div class="stat-icon yellow">⚠️</div><div class="stat-label">Risiko Sedang</div><div class="stat-value">7</div><div class="stat-sub">RT waspada</div></div>
+    <div class="stat-card red"><div class="stat-icon red">🔴</div><div class="stat-label">Risiko Tinggi</div><div class="stat-value">2</div><div class="stat-sub">perlu perhatian</div></div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Penilaian REKSA</div><div class="feature-desc">Formulir digital 10 indikator kerawanan longsor. Skor otomatis dan kategorisasi risiko.</div></div>
+    <div class="feature-card"><div class="feature-icon">🗺️</div><div class="feature-title">Peta Risiko GIS</div><div class="feature-desc">Peta interaktif seluruh RT dengan kode warna risiko, jalur evakuasi, dan titik kumpul.</div></div>
+    <div class="feature-card"><div class="feature-icon">🚨</div><div class="feature-title">Early Warning System</div><div class="feature-desc">Peringatan dini otomatis: AMAN → WASPADA → SIAGA dengan notifikasi WhatsApp.</div></div>
+    <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Indeks IKD</div><div class="feature-desc">Indeks Ketangguhan Desa — nilai komposit kesiapsiagaan seluruh RT Windujaya.</div></div>
+    <div class="feature-card"><div class="feature-icon">📱</div><div class="feature-title">Laporan Warga</div><div class="feature-desc">Warga dapat melaporkan indikasi longsor lengkap dengan foto dan lokasi GPS.</div></div>
+    <div class="feature-card"><div class="feature-icon">📄</div><div class="feature-title">Laporan Otomatis</div><div class="feature-desc">Generate PDF/Excel bulanan, triwulan, dan tahunan secara otomatis.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-text">📋 Kategori Risiko REKSA</div></div>
+    <div class="risk-row"><div class="risk-dot-lg" style="background:var(--green)"></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">Risiko Rendah</div><div style="font-size:11px;color:var(--text3)">Skor 33–52</div></div><div class="badge rendah">Aman</div></div>
+    <div class="risk-row"><div class="risk-dot-lg" style="background:var(--yellow)"></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">Risiko Sedang</div><div style="font-size:11px;color:var(--text3)">Skor 52.01–61</div></div><div class="badge sedang">Waspada</div></div>
+    <div class="risk-row"><div class="risk-dot-lg" style="background:var(--red)"></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">Risiko Tinggi</div><div style="font-size:11px;color:var(--text3)">Skor 61.01–80</div></div><div class="badge tinggi">Siaga</div></div>
+  </div>
+</div>
+
+<!-- DASHBOARD UTAMA -->
+<div id="page-dashboard" class="page active">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard Utama</h1>
+      <p>Monitoring risiko longsor Desa Windujaya · Update terakhir: <span style="color:var(--green)">5 menit lalu</span></p>
+    </div>
+    <div class="topbar-right">
+      <div class="desa-status status-waspada">⚠️ Status Desa: WASPADA</div>
+      <button class="btn btn-outline btn-sm">📄 Export</button>
+    </div>
+  </div>
+
+  <div class="alert-banner alert-waspada">
+    <div class="alert-dot dot-yellow"></div>
+    <div><strong>RT 12 & RT 08</strong> — Terdeteksi peningkatan retakan tanah. Pemeriksaan lapangan diperlukan. <span style="color:var(--yellow);cursor:pointer;text-decoration:underline">Lihat detail →</span></div>
+  </div>
+  <div class="alert-banner alert-siaga" style="margin-top:-8px">
+    <div class="alert-dot dot-red"></div>
+    <div><strong>RT 05</strong> — Drainase tersumbat + laporan 3 warga. Status berubah ke <strong>SIAGA</strong>. <span style="color:var(--red);cursor:pointer;text-decoration:underline">Tangani sekarang →</span></div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card blue"><div class="stat-icon blue">📍</div><div class="stat-label">RT Dipantau</div><div class="stat-value">15</div><div class="stat-sub">dari 18 RT total</div></div>
+    <div class="stat-card green"><div class="stat-icon green">✅</div><div class="stat-label">Risiko Rendah</div><div class="stat-value">6</div><div class="stat-sub">RT status aman</div></div>
+    <div class="stat-card yellow"><div class="stat-icon yellow">⚠️</div><div class="stat-label">Risiko Sedang</div><div class="stat-value">7</div><div class="stat-sub">perlu monitoring</div></div>
+    <div class="stat-card red"><div class="stat-icon red">🚨</div><div class="stat-label">Risiko Tinggi</div><div class="stat-value">2</div><div class="stat-sub">perlu penanganan</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📈 Tren Penilaian Bulanan</div><select class="form-select" style="font-size:11px;padding:3px 8px;width:auto">
+        <option>2025</option><option>2024</option></select></div>
+      <div class="chart-wrap"><canvas id="chartTren" role="img" aria-label="Grafik tren penilaian RT per bulan 2025"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">🍩 Distribusi Risiko RT</div></div>
+      <div class="chart-wrap"><canvas id="chartDist" role="img" aria-label="Distribusi risiko rendah sedang tinggi"></canvas></div>
+    </div>
+  </div>
+
+  <!-- RT TABLE -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">
+      <div class="card-title-text">📋 Status Seluruh RT</div>
+      <button class="btn btn-outline btn-sm" onclick="showPage('penilaian')">+ Input Penilaian</button>
+    </div>
+    <table class="rt-table">
+      <thead>
+        <tr>
+          <th>RT</th>
+          <th>Skor REKSA</th>
+          <th>Kategori</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Penilaian Terakhir</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="rtTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📱 Laporan Warga Terbaru</div><span style="font-size:11px;color:var(--text3)">3 belum dibaca</span></div>
+      <div class="notif-list">
+        <div class="notif-item">
+          <div class="notif-icon red">⚠️</div>
+          <div class="notif-content"><div class="notif-title">Retakan tanah baru — RT 05</div><div style="color:var(--text2);font-size:11px">Warga melaporkan retakan ±30cm di lereng belakang rumah</div><div class="notif-time">10 menit lalu · Budi Santoso</div></div>
+          <div class="notif-unread"></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon yellow">💧</div>
+          <div class="notif-content"><div class="notif-title">Drainase tersumbat — RT 08</div><div style="color:var(--text2);font-size:11px">Saluran air mampet, air menggenang di lereng</div><div class="notif-time">1 jam lalu · Siti Rahayu</div></div>
+          <div class="notif-unread"></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon yellow">🌧️</div>
+          <div class="notif-content"><div class="notif-title">Tanah bergerak kecil — RT 12</div><div style="color:var(--text2);font-size:11px">Pergerakan tanah pasca hujan deras semalam</div><div class="notif-time">3 jam lalu · Ahmad Yani</div></div>
+          <div class="notif-unread"></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon blue">ℹ️</div>
+          <div class="notif-content"><div class="notif-title">Vegetasi berkurang — RT 03</div><div style="color:var(--text2);font-size:11px">Penebangan pohon di area lereng RT 03</div><div class="notif-time">1 hari lalu · Ketua RT 03</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">💡 Rekomendasi Tindak Lanjut</div></div>
+      <div class="rekom-item urgent">
+        <div class="rekom-icon">🔴</div>
+        <div class="rekom-text"><strong>RT 05 — SEGERA</strong>Inspeksi lapangan retakan tanah. Pertimbangkan peningkatan status ke SIAGA dan evakuasi preventif.</div>
+      </div>
+      <div class="rekom-item">
+        <div class="rekom-icon">💧</div>
+        <div class="rekom-text"><strong>RT 08 & RT 12 — Drainase</strong>Pembersihan saluran air dan pembangunan drainase di lereng berisiko tinggi.</div>
+      </div>
+      <div class="rekom-item">
+        <div class="rekom-icon">🌳</div>
+        <div class="rekom-text"><strong>RT 03 & RT 07 — Vegetasi</strong>Penanaman pohon penahan tanah di area lereng yang teridentifikasi kritis.</div>
+      </div>
+      <div class="rekom-item ok">
+        <div class="rekom-icon">✅</div>
+        <div class="rekom-text"><strong>RT 01, 04, 10 — Pertahankan</strong>Lanjutkan pemantauan rutin bulanan. Jadwalkan simulasi bencana Q3 2025.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IKD PAGE -->
+<div id="page-ikd" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Indeks Ketangguhan Desa (IKD)</h1><p>Nilai komposit kesiapsiagaan bencana Desa Windujaya</p></div>
+    <div class="topbar-right"><button class="btn btn-outline btn-sm">📄 Cetak Laporan</button><button class="btn btn-primary btn-sm">📊 Export Excel</button></div>
+  </div>
+
+  <!-- IKD MAIN CARD -->
+  <div class="ikd-card" style="margin-bottom:20px">
+    <div class="ikd-header">
+      <div>
+        <div class="ikd-title">🏆 Indeks Ketangguhan Desa Windujaya</div>
+        <div class="ikd-value" id="ikdValue">72,5</div>
+        <div class="ikd-badge">⚡ DESA TANGGUH</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Formula IKD</div>
+        <div style="background:var(--card2);padding:10px 14px;border-radius:8px;font-size:12px;color:var(--text2);text-align:left;border:1px solid var(--border)">
+          IKD = Σ Skor RT ÷ Jumlah RT Dinilai<br>
+          <span style="color:var(--text3);font-size:10px;margin-top:4px;display:block">= 1087.5 ÷ 15 RT = 72.5</span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3)">Diperbarui: Juni 2025</div>
+      </div>
+    </div>
+    <div class="ikd-meter">
+      <div class="ikd-track">
+        <div class="ikd-fill" id="ikdFill" style="width:72.5%"></div>
+      </div>
+      <div class="ikd-needle" id="ikdNeedle" style="left:72.5%"></div>
+    </div>
+    <div class="ikd-scale">
+      <span>0 — Rentan</span>
+      <span>20 — Kurang</span>
+      <span>40 — Cukup</span>
+      <span>60 — Tangguh</span>
+      <span>80 — Sangat Tangguh →100</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:16px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:600">SIMULASI IKD — Geser untuk lihat dampak perubahan skor</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;color:var(--text2);min-width:80px">IKD Saat Ini</span>
+      <input type="range" id="ikdSlider" min="0" max="100" value="72.5" step="0.5" style="flex:1" oninput="updateIKD(this.value)">
+      <span style="font-size:14px;font-weight:700;color:#fff;min-width:40px" id="ikdSliderVal">72.5</span>
+    </div>
+  </div>
+
+  <div class="ikd-content" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📅 Perkembangan IKD Bulanan 2025</div></div>
+      <div class="chart-wrap tall"><canvas id="chartIKD" role="img" aria-label="Grafik perkembangan IKD bulanan 2025"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">🏅 Peringkat RT</div></div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">RT Paling Tangguh</div>
+        <div class="rank-item"><div class="rank-num gold">1</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 03</div><span style="font-size:13px;color:#fff;font-weight:700">48.2</span><span class="rank-up">↑ 2.1</span></div>
+        <div class="rank-item" style="margin-top:5px"><div class="rank-num silver">2</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 07</div><span style="font-size:13px;color:#fff;font-weight:700">47.6</span><span class="rank-up">↑ 1.3</span></div>
+        <div class="rank-item" style="margin-top:5px"><div class="rank-num bronze">3</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 10</div><span style="font-size:13px;color:#fff;font-weight:700">46.8</span><span class="rank-up">↑ 0.8</span></div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">RT Prioritas Mitigasi</div>
+        <div class="rank-item"><div class="rank-num" style="background:rgba(239,68,68,.2);color:var(--red)">!</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 12</div><span style="font-size:13px;color:var(--red);font-weight:700">68.4</span><span class="rank-down">↑ 3.2</span></div>
+        <div class="rank-item" style="margin-top:5px"><div class="rank-num" style="background:rgba(239,68,68,.2);color:var(--red)">!</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 08</div><span style="font-size:13px;color:var(--red);font-weight:700">66.1</span><span class="rank-down">↑ 1.8</span></div>
+        <div class="rank-item" style="margin-top:5px"><div class="rank-num" style="background:rgba(239,68,68,.2);color:var(--red)">!</div><div style="flex:1;font-size:13px;color:#fff;font-weight:500">RT 05</div><span style="font-size:13px;color:var(--red);font-weight:700">63.9</span><span class="rank-down">↑ 0.5</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KATEGORI IKD -->
+  <div class="card">
+    <div class="card-title"><div class="card-title-text">📊 Kategori Indeks Ketangguhan Desa</div></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+      <div style="text-align:center;padding:14px 8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--red)">0–20</div><div style="font-size:11px;color:var(--red);font-weight:600;margin-top:4px">RENTAN</div></div>
+      <div style="text-align:center;padding:14px 8px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.15);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--yellow)">21–40</div><div style="font-size:11px;color:var(--yellow);font-weight:600;margin-top:4px">KURANG</div></div>
+      <div style="text-align:center;padding:14px 8px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--blue)">41–60</div><div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:4px">CUKUP</div></div>
+      <div style="text-align:center;padding:14px 8px;background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.35);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--green)">61–80</div><div style="font-size:11px;color:var(--green);font-weight:600;margin-top:4px">TANGGUH ✓</div><div style="font-size:9px;color:var(--green);opacity:.7;margin-top:2px">Posisi saat ini</div></div>
+      <div style="text-align:center;padding:14px 8px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.1);border-radius:10px"><div style="font-size:22px;font-weight:800;color:#4ade80">81–100</div><div style="font-size:11px;color:#4ade80;font-weight:600;margin-top:4px">SANGAT TANGGUH</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PETA RISIKO -->
+<div id="page-peta" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Peta Risiko Longsor</h1><p>Desa Windujaya — 15 RT terpantau</p></div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="filterPeta('all')">Semua RT</button>
+      <button class="btn btn-sm" style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)" onclick="filterPeta('rendah')">● Rendah</button>
+      <button class="btn btn-sm" style="background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid rgba(234,179,8,.3)" onclick="filterPeta('sedang')">● Sedang</button>
+      <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)" onclick="filterPeta('tinggi')">● Tinggi</button>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <div class="map-header">
+      <div style="display:flex;gap:16px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Risiko Rendah (6 RT)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Risiko Sedang (7 RT)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Risiko Tinggi (2 RT)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Jalur Evakuasi</div>
+        <div class="legend-item">🏕️ Titik Kumpul</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">Klik marker untuk detail RT</div>
+    </div>
+    <div class="map-body">
+      <div class="map-canvas" id="mapCanvas">
+        <svg id="mapSvg" class="map-svg" viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background terrain -->
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="500" height="360" fill="#0a1520"/>
+          <rect width="500" height="360" fill="url(#grid)"/>
+          
+          <!-- Terrain hills -->
+          <ellipse cx="250" cy="150" rx="180" ry="120" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.08)" stroke-width="1"/>
+          <ellipse cx="250" cy="150" rx="130" ry="85" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.1)" stroke-width="0.5"/>
+          
+          <!-- River/road -->
+          <path d="M 30 300 Q 120 280 200 290 Q 280 300 380 270 Q 440 255 490 260" fill="none" stroke="rgba(59,130,246,0.4)" stroke-width="3" stroke-dasharray="none"/>
+          <text x="60" y="316" fill="rgba(59,130,246,0.5)" font-size="9" font-family="Segoe UI">Sungai Desa</text>
+          
+          <!-- Evac routes -->
+          <path d="M 250 180 L 250 90 L 350 60" fill="none" stroke="rgba(59,130,246,0.5)" stroke-width="1.5" stroke-dasharray="6 3"/>
+          <path d="M 200 200 L 140 140 L 80 100" fill="none" stroke="rgba(59,130,246,0.5)" stroke-width="1.5" stroke-dasharray="6 3"/>
+
+          <!-- RT Markers - Rendah (green) -->
+          <g class="rt-marker" data-rt="RT 01" data-skor="48.2" data-status="Rendah" data-laporan="1" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="120" cy="200" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="120" cy="200" r="7" fill="#22c55e"/>
+            <text x="120" y="222" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 01</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 03" data-skor="48.2" data-status="Rendah" data-laporan="0" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="180" cy="240" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="180" cy="240" r="7" fill="#22c55e"/>
+            <text x="180" y="262" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 03</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 04" data-skor="46.1" data-status="Rendah" data-laporan="0" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="310" cy="230" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="310" cy="230" r="7" fill="#22c55e"/>
+            <text x="310" y="252" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 04</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 07" data-skor="47.6" data-status="Rendah" data-laporan="1" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="380" cy="200" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="380" cy="200" r="7" fill="#22c55e"/>
+            <text x="380" y="222" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 07</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 09" data-skor="43.8" data-status="Rendah" data-laporan="0" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="430" cy="240" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="430" cy="240" r="7" fill="#22c55e"/>
+            <text x="430" y="262" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 09</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 10" data-skor="46.8" data-status="Rendah" data-laporan="0" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="80" cy="240" r="14" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="2"/>
+            <circle cx="80" cy="240" r="7" fill="#22c55e"/>
+            <text x="80" y="262" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="600" font-family="Segoe UI">RT 10</text>
+          </g>
+
+          <!-- RT Markers - Sedang (yellow) -->
+          <g class="rt-marker" data-rt="RT 02" data-skor="56.4" data-status="Sedang" data-laporan="2" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="150" cy="160" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="150" cy="160" r="7" fill="#eab308"/>
+            <text x="150" y="182" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 02</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 06" data-skor="58.1" data-status="Sedang" data-laporan="1" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="220" cy="140" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="220" cy="140" r="7" fill="#eab308"/>
+            <text x="220" y="162" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 06</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 11" data-skor="55.2" data-status="Sedang" data-laporan="2" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="280" cy="155" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="280" cy="155" r="7" fill="#eab308"/>
+            <text x="280" y="177" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 11</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 13" data-skor="57.8" data-status="Sedang" data-laporan="1" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="340" cy="145" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="340" cy="145" r="7" fill="#eab308"/>
+            <text x="340" y="167" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 13</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 14" data-skor="53.6" data-status="Sedang" data-laporan="0" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="400" cy="155" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="400" cy="155" r="7" fill="#eab308"/>
+            <text x="400" y="177" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 14</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 15" data-skor="59.3" data-status="Sedang" data-laporan="3" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="110" cy="170" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="110" cy="170" r="7" fill="#eab308"/>
+            <text x="110" y="192" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 15</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 04B" data-skor="52.4" data-status="Sedang" data-laporan="1" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="450" cy="170" r="14" fill="rgba(234,179,8,0.2)" stroke="#eab308" stroke-width="2"/>
+            <circle cx="450" cy="170" r="7" fill="#eab308"/>
+            <text x="450" y="192" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600" font-family="Segoe UI">RT 04B</text>
+          </g>
+
+          <!-- RT Markers - Tinggi (red) with pulse -->
+          <g class="rt-marker" data-rt="RT 05" data-skor="63.9" data-status="Tinggi" data-laporan="3" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="200" cy="105" r="20" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1">
+              <animate attributeName="r" values="16;22;16" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="105" r="14" fill="rgba(239,68,68,0.25)" stroke="#ef4444" stroke-width="2.5"/>
+            <circle cx="200" cy="105" r="7" fill="#ef4444"/>
+            <text x="200" y="127" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700" font-family="Segoe UI">RT 05 ⚠</text>
+          </g>
+          <g class="rt-marker" data-rt="RT 08" data-skor="66.1" data-status="Tinggi" data-laporan="2" onclick="showRTDetail(this)" style="cursor:pointer">
+            <circle cx="290" cy="100" r="20" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1">
+              <animate attributeName="r" values="16;22;16" dur="2.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="290" cy="100" r="14" fill="rgba(239,68,68,0.25)" stroke="#ef4444" stroke-width="2.5"/>
+            <circle cx="290" cy="100" r="7" fill="#ef4444"/>
+            <text x="290" y="122" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700" font-family="Segoe UI">RT 08 ⚠</text>
+          </g>
+
+          <!-- Assembly points -->
+          <text x="250" y="80" text-anchor="middle" font-size="16">🏕️</text>
+          <text x="250" y="76" text-anchor="middle" fill="rgba(59,130,246,0.6)" font-size="8" font-family="Segoe UI">Titik Kumpul 1</text>
+
+          <!-- Compass -->
+          <g transform="translate(460,30)">
+            <circle cx="0" cy="0" r="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+            <text x="0" y="-6" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="9" font-family="Segoe UI">U</text>
+            <path d="M 0 -12 L 3 0 L 0 3 L -3 0 Z" fill="rgba(239,68,68,0.7)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="map-legend">
+        <div>
+          <div class="legend-title">Statistik Peta</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Total RT</span><span style="color:#fff;font-weight:600">15 RT</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Jalur Evakuasi</span><span style="color:var(--blue);font-weight:600">2 jalur</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Titik Kumpul</span><span style="color:var(--blue);font-weight:600">3 titik</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Laporan Warga</span><span style="color:var(--yellow);font-weight:600">18 aktif</span></div>
+          </div>
+        </div>
+        <div id="rtDetailPanel" class="rt-detail">
+          <h4 id="rtDetailTitle">RT —</h4>
+          <div class="rt-detail-row"><span>Skor REKSA</span><span id="rdSkor">—</span></div>
+          <div class="rt-detail-row"><span>Status Risiko</span><span id="rdStatus">—</span></div>
+          <div class="rt-detail-row"><span>Laporan Warga</span><span id="rdLaporan">—</span></div>
+          <div style="margin-top:8px">
+            <button class="btn btn-outline btn-sm" style="width:100%" onclick="showPage('penilaian')">Input Penilaian →</button>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:12px">
+          <div class="legend-title" style="margin-bottom:8px">Layer Peta</div>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;margin-bottom:6px">
+            <input type="checkbox" checked> Area Risiko RT
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;margin-bottom:6px">
+            <input type="checkbox" checked> Jalur Evakuasi
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;margin-bottom:6px">
+            <input type="checkbox" checked> Titik Kumpul
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer">
+            <input type="checkbox"> Laporan Warga
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EARLY WARNING SYSTEM -->
+<div id="page-ews" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Early Warning System</h1><p>Sistem Peringatan Dini Bencana Longsor — Desa Windujaya</p></div>
+    <div class="topbar-right"><button class="btn btn-danger btn-sm">🚨 Aktifkan Siaga Manual</button></div>
+  </div>
+
+  <div class="three-col">
+    <div style="background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.3);border-radius:14px;padding:20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-size:16px;font-weight:700;color:var(--green)">AMAN</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">6 RT</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5">Kondisi normal, tidak ada indikasi longsor</div>
+    </div>
+    <div style="background:rgba(234,179,8,.1);border:2px solid rgba(234,179,8,.4);border-radius:14px;padding:20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px;animation:pulse-yellow 1.5s infinite">⚠️</div>
+      <div style="font-size:16px;font-weight:700;color:var(--yellow)">WASPADA</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">7 RT — STATUS DESA</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5">Indikasi awal terpantau, monitoring intensif</div>
+    </div>
+    <div style="background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.4);border-radius:14px;padding:20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px;animation:pulse-red 1.5s infinite">🚨</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red)">SIAGA</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">RT 05 & RT 08</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5">Bahaya tinggi, evakuasi preventif mungkin diperlukan</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">🔔 Trigger Peningkatan Status</div></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Sistem otomatis mengubah status ketika kondisi berikut terpenuhi:</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="padding:10px;background:var(--card2);border-radius:8px;border-left:3px solid var(--red)">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">→ Retakan tanah meningkat</div>
+          <div style="font-size:11px;color:var(--text3)">Laporan 2+ warga dalam 24 jam</div>
+        </div>
+        <div style="padding:10px;background:var(--card2);border-radius:8px;border-left:3px solid var(--red)">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">→ Drainase tersumbat</div>
+          <div style="font-size:11px;color:var(--text3)">Skor drainase turun &gt;10 poin dalam 1 minggu</div>
+        </div>
+        <div style="padding:10px;background:var(--card2);border-radius:8px;border-left:3px solid var(--yellow)">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">→ Longsor kecil terjadi</div>
+          <div style="font-size:11px;color:var(--text3)">1 laporan konfirmasi dari kader</div>
+        </div>
+        <div style="padding:10px;background:var(--card2);border-radius:8px;border-left:3px solid var(--yellow)">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">→ Skor REKSA naik signifikan</div>
+          <div style="font-size:11px;color:var(--text3)">Kenaikan &gt;5 poin dari penilaian sebelumnya</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📨 Log Notifikasi Terkirim</div></div>
+      <div class="notif-list">
+        <div class="notif-item">
+          <div class="notif-icon red">🚨</div>
+          <div class="notif-content">
+            <div class="notif-title">SIAGA — RT 05 Windujaya</div>
+            <div style="font-size:11px;color:var(--text3)">WhatsApp → Pak Kades, Kader, Ketua RT 05</div>
+            <div class="notif-time">5 mnt lalu · Terkirim ✓</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon yellow">⚠️</div>
+          <div class="notif-content">
+            <div class="notif-title">WASPADA — RT 08 & RT 12</div>
+            <div style="font-size:11px;color:var(--text3)">WhatsApp → Pemdes, BPBD Kecamatan</div>
+            <div class="notif-time">2 jam lalu · Terkirim ✓</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon blue">📊</div>
+          <div class="notif-content">
+            <div class="notif-title">Laporan Bulanan Mei 2025</div>
+            <div style="font-size:11px;color:var(--text3)">PDF dikirim ke Pemerintah Desa</div>
+            <div class="notif-time">1 hari lalu · Terkirim ✓</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon green">✅</div>
+          <div class="notif-content">
+            <div class="notif-title">Status kembali AMAN — RT 11</div>
+            <div style="font-size:11px;color:var(--text3)">Setelah pembersihan drainase</div>
+            <div class="notif-time">3 hari lalu · Terkirim ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-text">📊 Tren Perubahan Status (6 Bulan)</div></div>
+    <div class="chart-wrap"><canvas id="chartEWS" role="img" aria-label="Grafik tren status RT 6 bulan terakhir"></canvas></div>
+  </div>
+</div>
+
+<!-- FORM PENILAIAN -->
+<div id="page-penilaian" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Form Penilaian REKSA</h1><p>Formulir Penilaian Ketangguhan Siaga Bencana — 10 Indikator</p></div>
+    <div class="topbar-right"><button class="btn btn-outline btn-sm">📋 Lihat Riwayat</button></div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:16px">
+    <div class="form-section" style="margin-bottom:0">
+      <div class="form-section-title">📍 Informasi Dasar</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Pilih RT</label>
+          <select class="form-select">
+            <option>— Pilih RT —</option>
+            <option>RT 01</option><option>RT 02</option><option>RT 03</option>
+            <option>RT 04</option><option>RT 05</option><option>RT 06</option>
+            <option>RT 07</option><option>RT 08</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal Penilaian</label>
+          <input type="date" class="form-input" value="2025-06-01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Penilai</label>
+          <input type="text" class="form-input" placeholder="Nama kader / ketua RT">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cuaca Saat Penilaian</label>
+          <select class="form-select">
+            <option>Cerah</option><option>Mendung</option><option>Hujan Ringan</option><option>Hujan Deras</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="score-preview">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Pratinjau Skor</div>
+      <div class="score-num" id="previewScore">54.0</div>
+      <div class="score-cat" id="previewCat" style="color:var(--yellow)">⚠️ Risiko Sedang</div>
+      <div style="height:6px;background:var(--card);border-radius:3px;overflow:hidden;margin:14px 0 8px">
+        <div id="previewBar" style="height:100%;width:55%;background:var(--yellow);border-radius:3px;transition:width .4s,background .4s"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">Range: 33 — 80</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px;justify-content:center" onclick="alert('✅ Penilaian berhasil disimpan!\n\nRT: RT 05\nSkor: 54.0\nKategori: Risiko Sedang\n\nData telah masuk ke sistem REKSA.')">💾 Simpan Penilaian</button>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">📊 10 Indikator Penilaian REKSA</div>
+    <div class="indicator-grid" id="indicatorGrid"></div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">📷 Dokumentasi Lapangan</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Foto Kondisi Lereng</label>
+        <div style="background:var(--card2);border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;font-size:12px;color:var(--text3)">
+          📷 Klik untuk unggah foto
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foto Drainase</label>
+        <div style="background:var(--card2);border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;font-size:12px;color:var(--text3)">
+          📷 Klik untuk unggah foto
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foto Retakan Tanah (jika ada)</label>
+        <div style="background:var(--card2);border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;font-size:12px;color:var(--text3)">
+          📷 Klik untuk unggah foto
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan Tambahan</label>
+        <textarea class="form-input" rows="3" placeholder="Observasi lapangan, kondisi khusus..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LAPORAN WARGA -->
+<div id="page-laporan" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Laporan Warga</h1><p>18 laporan aktif · 3 belum diverifikasi</p></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" onclick="alert('Form laporan warga dibuka.\nWarga dapat mengisi:\n• Jenis kejadian\n• Lokasi (GPS auto-detect)\n• Foto kondisi\n• Deskripsi kejadian\n\nNotifikasi otomatis terkirim ke kader & pemdes.')">+ Laporan Baru</button>
+    </div>
+  </div>
+
+  <div class="three-col">
+    <div class="stat-card red"><div class="stat-icon red">🚨</div><div class="stat-label">Belum Ditangani</div><div class="stat-value">3</div></div>
+    <div class="stat-card yellow"><div class="stat-icon yellow">⏳</div><div class="stat-label">Sedang Diproses</div><div class="stat-value">5</div></div>
+    <div class="stat-card green"><div class="stat-icon green">✅</div><div class="stat-label">Selesai (bulan ini)</div><div class="stat-value">10</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+    <div class="report-card">
+      <div class="report-header"><span style="font-size:12px;font-weight:600;color:#fff">RT 05 — Retakan Tanah</span><span class="badge tinggi">BELUM</span></div>
+      <div class="report-img">🌋</div>
+      <div style="font-size:12px;color:var(--text2)">Retakan memanjang ±30cm di lereng belakang gang 3, terlihat setelah hujan 3 jam</div>
+      <div class="report-meta">Budi Santoso · 10 menit lalu</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-sm" style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);flex:1">✓ Verifikasi</button>
+        <button class="btn btn-outline btn-sm">Lihat</button>
+      </div>
+    </div>
+    <div class="report-card">
+      <div class="report-header"><span style="font-size:12px;font-weight:600;color:#fff">RT 08 — Drainase</span><span class="badge sedang">PROSES</span></div>
+      <div class="report-img">💧</div>
+      <div style="font-size:12px;color:var(--text2)">Saluran air tersumbat di RT 08, air mulai menggenang di area lereng sekitar 50 meter</div>
+      <div class="report-meta">Siti Rahayu · 1 jam lalu</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-outline btn-sm" style="flex:1">Tindak Lanjut</button>
+        <button class="btn btn-outline btn-sm">Lihat</button>
+      </div>
+    </div>
+    <div class="report-card">
+      <div class="report-header"><span style="font-size:12px;font-weight:600;color:#fff">RT 12 — Pergeseran</span><span class="badge tinggi">BELUM</span></div>
+      <div class="report-img">⛰️</div>
+      <div style="font-size:12px;color:var(--text2)">Tanah bergerak sekitar 5cm pasca hujan deras semalam. Pagar belakang rumah miring</div>
+      <div class="report-meta">Ahmad Yani · 3 jam lalu</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-sm" style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);flex:1">✓ Verifikasi</button>
+        <button class="btn btn-outline btn-sm">Lihat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATISTIK -->
+<div id="page-statistik" class="page">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Laporan & Statistik</h1><p>Rekap data monitoring Desa Windujaya</p></div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm">📊 Excel</button>
+      <button class="btn btn-primary btn-sm">📄 PDF</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Bulanan</div>
+    <div class="tab">Triwulan</div>
+    <div class="tab">Tahunan</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📈 Perkembangan Skor Per RT</div></div>
+      <div class="chart-wrap tall"><canvas id="chartRT" role="img" aria-label="Perkembangan skor REKSA per RT 6 bulan"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-text">📊 Jumlah Laporan Warga per Bulan</div></div>
+      <div class="chart-wrap tall"><canvas id="chartLap" role="img" aria-label="Jumlah laporan warga per bulan"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-text">📋 Rekap Nilai Semua RT — Mei 2025</div></div>
+    <table class="rt-table">
+      <thead>
+        <tr>
+          <th>RT</th><th>Skor Jan</th><th>Skor Mar</th><th>Skor Mei</th><th>Perubahan</th><th>Kategori</th><th>Laporan Warga</th><th>IKD Kontribusi</th>
+        </tr>
+      </thead>
+      <tbody id="statTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+// DATA
+const rtData = [
+  {rt:'RT 01',skor:48.2,prev:46.5,kat:'Rendah',status:'Aman',laporan:1},
+  {rt:'RT 02',skor:56.4,prev:55.8,kat:'Sedang',status:'Waspada',laporan:2},
+  {rt:'RT 03',skor:48.2,prev:46.1,kat:'Rendah',status:'Aman',laporan:0},
+  {rt:'RT 04',skor:46.1,prev:47.2,kat:'Rendah',status:'Aman',laporan:0},
+  {rt:'RT 05',skor:63.9,prev:61.2,kat:'Tinggi',status:'Siaga',laporan:3},
+  {rt:'RT 06',skor:58.1,prev:56.4,kat:'Sedang',status:'Waspada',laporan:1},
+  {rt:'RT 07',skor:47.6,prev:46.8,kat:'Rendah',status:'Aman',laporan:1},
+  {rt:'RT 08',skor:66.1,prev:64.3,kat:'Tinggi',status:'Siaga',laporan:2},
+  {rt:'RT 09',skor:43.8,prev:44.2,kat:'Rendah',status:'Aman',laporan:0},
+  {rt:'RT 10',skor:46.8,prev:45.6,kat:'Rendah',status:'Aman',laporan:0},
+  {rt:'RT 11',skor:55.2,prev:57.1,kat:'Sedang',status:'Waspada',laporan:2},
+  {rt:'RT 12',skor:68.4,prev:65.2,kat:'Tinggi',status:'Siaga',laporan:3},
+  {rt:'RT 13',skor:57.8,prev:56.0,kat:'Sedang',status:'Waspada',laporan:1},
+  {rt:'RT 14',skor:53.6,prev:52.1,kat:'Sedang',status:'Waspada',laporan:0},
+  {rt:'RT 15',skor:59.3,prev:58.4,kat:'Sedang',status:'Waspada',laporan:3},
+];
+
+const indicators = [
+  {name:'Kondisi Lereng',val:6,max:10},
+  {name:'Sistem Drainase',val:5,max:10},
+  {name:'Retakan Tanah',val:7,max:10},
+  {name:'Vegetasi Penahan',val:4,max:10},
+  {name:'Riwayat Longsor',val:6,max:8},
+  {name:'Jalur Evakuasi',val:5,max:8},
+  {name:'Sistem Peringatan',val:4,max:8},
+  {name:'Kesiapsiagaan',val:6,max:8},
+  {name:'Dokumen Simulasi',val:5,max:8},
+  {name:'Titik Kumpul',val:6,max:10},
+];
+
+// PAGE NAV
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const page = document.getElementById('page-'+id);
+  if(page) page.classList.add('active');
+  const navMap = {landing:0,dashboard:1,ikd:2,peta:3,ews:4,penilaian:5,laporan:6,statistik:7};
+  const navItems = document.querySelectorAll('.nav-item');
+  if(navMap[id]!==undefined && navItems[navMap[id]]) navItems[navMap[id]].classList.add('active');
+  setTimeout(()=>initCharts(id),100);
+}
+
+// RT TABLE
+function buildRTTable() {
+  const tbody = document.getElementById('rtTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = rtData.map(d=>{
+    const pct = ((d.skor-33)/(80-33)*100).toFixed(0);
+    const color = d.kat==='Rendah'?'green':d.kat==='Sedang'?'yellow':'red';
+    const delta = (d.skor-d.prev).toFixed(1);
+    const sign = delta>0?'+':'';
+    return `<tr>
+      <td><strong style="color:#fff">${d.rt}</strong></td>
+      <td><strong style="color:#fff">${d.skor.toFixed(1)}</strong> <span style="font-size:10px;color:${delta>0?'var(--red)':'var(--green)'}">${sign}${delta}</span></td>
+      <td><span class="badge ${d.kat.toLowerCase()}">${d.kat}</span></td>
+      <td><span class="badge ${d.status.toLowerCase()}">${d.status}</span></td>
+      <td><div class="progress-bar" style="width:80px"><div class="progress-fill fill-${color}" style="width:${pct}%"></div></div></td>
+      <td style="font-size:11px">Jun 2025</td>
+      <td><button class="btn btn-outline btn-sm" onclick="showPage('penilaian')">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// STAT TABLE
+function buildStatTable() {
+  const tbody = document.getElementById('statTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = rtData.map(d=>{
+    const delta = (d.skor-d.prev).toFixed(1);
+    const sign = delta>0?'+':'';
+    const color = d.kat==='Rendah'?'var(--green)':d.kat==='Sedang'?'var(--yellow)':'var(--red)';
+    return `<tr>
+      <td><strong style="color:#fff">${d.rt}</strong></td>
+      <td style="color:var(--text2)">${(d.prev-1.5).toFixed(1)}</td>
+      <td style="color:var(--text2)">${(d.prev+0.5).toFixed(1)}</td>
+      <td><strong style="color:#fff">${d.skor.toFixed(1)}</strong></td>
+      <td style="color:${parseFloat(delta)>0?'var(--red)':'var(--green)'};font-weight:600">${sign}${delta}</td>
+      <td><span class="badge ${d.kat.toLowerCase()}">${d.kat}</span></td>
+      <td style="text-align:center">${d.laporan}</td>
+      <td style="color:${color};font-weight:600">${d.skor.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// INDICATORS
+function buildIndicators() {
+  const grid = document.getElementById('indicatorGrid');
+  if(!grid) return;
+  grid.innerHTML = indicators.map((ind,i)=>{
+    const pct = (ind.val/ind.max*100).toFixed(0);
+    return `<div class="indicator-item">
+      <div class="ind-name">${ind.name}</div>
+      <input type="range" class="ind-slider" min="1" max="${ind.max}" value="${ind.val}" oninput="updateScore(this,${i})">
+      <div class="ind-value" id="indVal${i}">${ind.val}/${ind.max}</div>
+      <div class="ind-label">${pct}% dari maksimal</div>
+    </div>`;
+  }).join('');
+}
+
+function updateScore(slider, idx) {
+  indicators[idx].val = parseInt(slider.value);
+  const el = document.getElementById('indVal'+idx);
+  if(el) el.textContent = slider.value+'/'+indicators[idx].max;
+  const total = indicators.reduce((s,ind)=>s+(ind.val/ind.max)*10, 0);
+  const scaled = (total/indicators.length * 8 + 33).toFixed(1);
+  const score = Math.min(80, Math.max(33, parseFloat(scaled)));
+  const s = document.getElementById('previewScore');
+  const c = document.getElementById('previewCat');
+  const b = document.getElementById('previewBar');
+  if(s) s.textContent = score.toFixed(1);
+  const pct = ((score-33)/(80-33)*100);
+  if(b){ b.style.width=pct+'%'; b.style.background=score<=52?'var(--green)':score<=61?'var(--yellow)':'var(--red)'; }
+  if(c){
+    if(score<=52){ c.textContent='✅ Risiko Rendah'; c.style.color='var(--green)'; }
+    else if(score<=61){ c.textContent='⚠️ Risiko Sedang'; c.style.color='var(--yellow)'; }
+    else{ c.textContent='🔴 Risiko Tinggi'; c.style.color='var(--red)'; }
+  }
+}
+
+// IKD SLIDER
+function updateIKD(val) {
+  const v = parseFloat(val);
+  document.getElementById('ikdValue').textContent = v.toFixed(1).replace('.',',');
+  document.getElementById('ikdSliderVal').textContent = v.toFixed(1);
+  document.getElementById('ikdFill').style.width = v+'%';
+  document.getElementById('ikdNeedle').style.left = v+'%';
+  const badge = document.querySelector('.ikd-badge');
+  if(badge){
+    if(v<=20){badge.textContent='⚠️ DESA RENTAN';badge.style.background='rgba(239,68,68,.15)';badge.style.borderColor='rgba(239,68,68,.3)';badge.style.color='var(--red)'}
+    else if(v<=40){badge.textContent='⚠️ DESA KURANG TANGGUH';badge.style.background='rgba(234,179,8,.15)';badge.style.borderColor='rgba(234,179,8,.3)';badge.style.color='var(--yellow)'}
+    else if(v<=60){badge.textContent='ℹ️ DESA CUKUP TANGGUH';badge.style.background='rgba(59,130,246,.15)';badge.style.borderColor='rgba(59,130,246,.3)';badge.style.color='var(--blue)'}
+    else if(v<=80){badge.textContent='⚡ DESA TANGGUH';badge.style.background='rgba(34,197,94,.15)';badge.style.borderColor='rgba(34,197,94,.3)';badge.style.color='var(--green)'}
+    else{badge.textContent='🏆 DESA SANGAT TANGGUH';badge.style.background='rgba(34,197,94,.2)';badge.style.borderColor='rgba(34,197,94,.4)';badge.style.color='#4ade80'}
+  }
+}
+
+// MAP DETAIL
+function showRTDetail(el) {
+  const rt = el.dataset.rt;
+  const panel = document.getElementById('rtDetailPanel');
+  document.getElementById('rtDetailTitle').textContent = rt;
+  const skor = parseFloat(el.dataset.skor);
+  document.getElementById('rdSkor').textContent = skor.toFixed(1);
+  const kat = el.dataset.status;
+  const rdS = document.getElementById('rdStatus');
+  rdS.textContent = kat;
+  rdS.style.color = kat==='Rendah'?'var(--green)':kat==='Sedang'?'var(--yellow)':'var(--red)';
+  document.getElementById('rdLaporan').textContent = el.dataset.laporan+' laporan';
+  panel.classList.add('visible');
+}
+
+function filterPeta(type) {
+  document.querySelectorAll('.rt-marker').forEach(m => {
+    const s = m.dataset.status?.toLowerCase();
+    m.style.opacity = (type==='all' || s===type) ? '1' : '0.2';
+  });
+}
+
+// CHARTS
+let charts = {};
+function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function initCharts(page) {
+  if(page==='dashboard') {
+    destroyChart('tren'); destroyChart('dist');
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun'];
+    const ctx1 = document.getElementById('chartTren');
+    if(ctx1) charts.tren = new Chart(ctx1, {
+      type:'line',
+      data:{labels:months,datasets:[
+        {label:'Rendah',data:[4,4,5,5,6,6],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.4,fill:true,borderWidth:2},
+        {label:'Sedang',data:[8,8,7,7,7,7],borderColor:'#eab308',backgroundColor:'rgba(234,179,8,.1)',tension:.4,fill:true,borderWidth:2},
+        {label:'Tinggi',data:[3,3,3,3,2,2],borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',tension:.4,fill:true,borderWidth:2},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}}}}
+    });
+    const ctx2 = document.getElementById('chartDist');
+    if(ctx2) charts.dist = new Chart(ctx2, {
+      type:'doughnut',
+      data:{labels:['Rendah (6)','Sedang (7)','Tinggi (2)'],datasets:[{data:[6,7,2],backgroundColor:['rgba(34,197,94,.7)','rgba(234,179,8,.7)','rgba(239,68,68,.7)'],borderColor:['#22c55e','#eab308','#ef4444'],borderWidth:2,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#9ca3af',font:{size:11},padding:12}}},cutout:'60%'}
+    });
+  }
+  if(page==='ikd') {
+    destroyChart('ikd');
+    const ctx = document.getElementById('chartIKD');
+    if(ctx) charts.ikd = new Chart(ctx, {
+      type:'bar',
+      data:{labels:['Jan','Feb','Mar','Apr','Mei'],datasets:[
+        {label:'IKD',data:[61,64,66,69,72.5],backgroundColor:'rgba(34,197,94,.6)',borderColor:'#22c55e',borderWidth:2,borderRadius:6},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},y:{min:50,max:90,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}}}}
+    });
+  }
+  if(page==='ews') {
+    destroyChart('ews');
+    const ctx = document.getElementById('chartEWS');
+    if(ctx) charts.ews = new Chart(ctx, {
+      type:'bar',
+      data:{labels:['Jan','Feb','Mar','Apr','Mei','Jun'],datasets:[
+        {label:'Siaga',data:[3,3,3,2,3,2],backgroundColor:'rgba(239,68,68,.7)',borderRadius:4},
+        {label:'Waspada',data:[8,8,7,7,7,7],backgroundColor:'rgba(234,179,8,.7)',borderRadius:4},
+        {label:'Aman',data:[4,4,5,6,5,6],backgroundColor:'rgba(34,197,94,.7)',borderRadius:4},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9ca3af',font:{size:11}}}},scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}}}}
+    });
+  }
+  if(page==='statistik') {
+    destroyChart('rt'); destroyChart('lap');
+    const ctx3 = document.getElementById('chartRT');
+    const months = ['Jan','Feb','Mar','Apr','Mei'];
+    if(ctx3) charts.rt = new Chart(ctx3, {
+      type:'line',
+      data:{labels:months,datasets:[
+        {label:'RT 05',data:[58,60,61,62,63.9],borderColor:'#ef4444',tension:.4,borderWidth:2,pointRadius:3},
+        {label:'RT 08',data:[62,63,64,65,66.1],borderColor:'#f97316',tension:.4,borderWidth:2,pointRadius:3},
+        {label:'RT 03',data:[48,47,47,48,48.2],borderColor:'#22c55e',tension:.4,borderWidth:2,pointRadius:3},
+        {label:'RT 07',data:[46,47,47,47,47.6],borderColor:'#4ade80',tension:.4,borderWidth:2,pointRadius:3},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9ca3af',font:{size:11}}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}}}}
+    });
+    const ctx4 = document.getElementById('chartLap');
+    if(ctx4) charts.lap = new Chart(ctx4, {
+      type:'bar',
+      data:{labels:['Jan','Feb','Mar','Apr','Mei','Jun'],datasets:[
+        {label:'Laporan Warga',data:[5,8,6,12,16,18],backgroundColor:'rgba(59,130,246,.6)',borderColor:'#3b82f6',borderWidth:1.5,borderRadius:6},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}}}}
+    });
+  }
+}
+
+// INIT
+buildRTTable();
+buildStatTable();
+buildIndicators();
+initCharts('dashboard');
+</script>
+</body>
+</html>
