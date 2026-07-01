@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - REKSA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,sans-serif}
+body{background:linear-gradient(135deg,#0b3b8c,#4f8cff);display:flex;justify-content:center;align-items:center;height:100vh}
+.card{width:900px;display:grid;grid-template-columns:1.1fr .9fr;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,.25)}
+.left{background:#0b3b8c;color:#fff;padding:50px}
+.left h1{font-size:48px;margin-bottom:10px}
+.left p{line-height:1.7}
+.right{padding:45px}
+h2{color:#0b3b8c;margin-bottom:20px}
+label{display:block;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px}
+.pass{position:relative}
+.pass i{position:absolute;right:12px;top:14px;cursor:pointer}
+button{width:100%;margin-top:22px;padding:14px;border:none;background:#0b3b8c;color:#fff;border-radius:8px;font-size:16px;cursor:pointer}
+a{text-decoration:none;color:#0b3b8c}
+.footer{margin-top:15px;text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="left">
+<h1>REKSA</h1>
+<h3>Rapor Penilaian Ketangguhan Siaga Bencana</h3>
+<p>Silakan masuk menggunakan akun Anda untuk mengakses dashboard sesuai peran.</p>
+<ul>
+<li>Admin Desa</li>
+<li>Ketua RT</li>
+<li>Masyarakat</li>
+</ul>
+</div>
+<div class="right">
+<h2>Login</h2>
+<form onsubmit="return login(event)">
+<label>Peran</label>
+<select id="role">
+<option>Admin Desa</option>
+<option>Ketua RT</option>
+<option>Masyarakat</option>
+</select>
+<label>Username</label>
+<input id="user" required>
+<label>Password</label>
+<div class="pass">
+<input id="pass" type="password" required>
+<i class="fa-solid fa-eye" onclick="togglePass()"></i>
+</div>
+<button type="submit">Masuk</button>
+</form>
+<div class="footer">
+<a href="index.html">← Kembali ke Beranda</a>
+</div>
+</div>
+</div>
+<script>
+function togglePass(){
+ const p=document.getElementById('pass');
+ p.type=p.type==='password'?'text':'password';
+}
+function login(e){
+ e.preventDefault();
+ const role=document.getElementById('role').value;
+ if(role==='Admin Desa') location.href='dashboard-admin.html';
+ else if(role==='Ketua RT') location.href='dashboard-rt.html';
+ else location.href='dashboard-masyarakat.html';
+ return false;
+}
+</script>
+</body>
+</html>
